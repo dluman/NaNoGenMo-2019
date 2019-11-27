@@ -1,6 +1,7 @@
 import random
 import Rule
 import File
+import main
 import matplotlib.pyplot as plt
 
 from shapely.geometry import Polygon
@@ -13,6 +14,7 @@ class Grammar:
     def __init__(self):
         self.final_shape = None
         self.polygons = []
+        self.rooms = []
         self.lines = []
     
     @staticmethod
@@ -46,7 +48,7 @@ class Grammar:
         return (x/rand,y/rand)
         
     def get_collision(self, child = None):
-        for shape in self.polygons:
+        for shape in self.rooms:
             if child.intersects(shape):
                 return True
         return False
@@ -56,21 +58,20 @@ class Grammar:
             x,y = self.final_shape.exterior.xy
         except AttributeError:
             print "Trying again..."
-            self.polygons = []
-            self.generate_parent()
-            self.generate_child(random.randint(1,5))
-            self.generate_outline()
-            x,y = self.final_shape.exterior.xy
+            main.main()
         plt.plot(x,y,color='black')
-        for line in self.lines:
-            print line
-            plt.plot(
-                [line[0][0],
-                line[0][1]],
-                [line[1][0],
-                line[1][1]],
-                color='black'
-            )
+        #for line in self.lines:
+        #    print line
+        #    plt.plot(
+        #        [line[0][0],
+        #        line[0][1]],
+        #        [line[1][0],
+        #        line[1][1]],
+        #        color='black'
+        #    )
+        for polygon in self.rooms:
+            x,y = polygon.exterior.xy
+            plt.plot(x,y,color='black')
         plt.axis('off')
         plt.savefig("a_house.png")
         file = File.ImageOps("a_house.png")
@@ -97,7 +98,7 @@ class Grammar:
                 (50,0)
             ]
            )
-        self.generate_walls(polygon,random.randint(0,1))
+        #self.generate_walls(polygon,random.randint(0,1))
         self.polygons.append(polygon)
     
     def generate_child(self, count, previous = None):
@@ -129,10 +130,65 @@ class Grammar:
                     (x+50,y)
                 ]
             )
-        self.generate_walls(polygon,random.randint(0,1))
+        #self.generate_walls(polygon,random.randint(0,1))
+        self.generate_rooms(polygon,random.randint(0,1))
         self.polygons.append(polygon)
         count -= 1
         self.generate_child(count, polygon)
+        
+    def generate_rooms(self, polygon, count):
+        if count == 0: return
+        room = None
+        x_vals, y_vals = polygon.exterior.xy
+        _x = min(x_vals)
+        orig_x = _x
+        _y = random.uniform(min(y_vals),max(y_vals))
+        orig_y = _y
+        
+        origin = (_x,_y)
+        
+        while Point(_x+1,_y).within(polygon):
+            _x += 1
+        _x += 1
+        topright = (_x,_y)
+                
+        _x = orig_x
+        while Point(_x+1,_y-1).within(polygon):
+            _y -= 1
+        bottomleft = (_x,_y)
+                
+        _x = max(x_vals)
+        _y = orig_y
+        while Point(_x-1,_y-1).within(polygon):
+            _y -= 1
+        bottomright = (_x,_y)
+        orientation = self.lateral()
+        if orientation:
+            room = Polygon(
+                [
+                    origin,
+                    topright,
+                    bottomright,
+                    bottomleft
+                ]
+            )
+        else:
+            room = Polygon(
+                [
+                    origin[::-1],
+                    topright[::-1],
+                    bottomright[::-1],
+                    bottomleft[::-1]
+                ]
+            )
+        
+        if self.get_collision(room):
+            return
+            
+        self.rooms.append(room)
+                
+        count -= 1
+        self.generate_rooms(polygon, count)
         
     def generate_walls(self, polygon, count):
         if count == 0:
