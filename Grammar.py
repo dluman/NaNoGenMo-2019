@@ -23,29 +23,16 @@ class Grammar:
         if rand > 0:
             return True
         return False
-        
-    @staticmethod
-    def get_size(x_val,y_val):
-        max = x_val[0]
-        for x in x_val:
-            if x > max:
-                max = x
-                w = x
-        max = y_val[0]
-        for y in y_val:
-            if y > max:
-                max = y
-                h = y
-        return (w,h)
     
     @staticmethod
-    def choose_origin(x,y):
-        rand = 1
-        while rand % 2 != 0:
-            rand = random.randint(0,10)
-        if rand == 0:
-            rand = 1
-        return (x/rand,y/rand)
+    def choose_origin(x_val,y_val):
+        x_seed = random.randint(0,1)
+        y_seed = random.randint(0,1)
+        if x_seed: origin_x = max(x_val)
+        else: origin_x = min(x_val)
+        if y_seed: origin_y = max(y_val)
+        else: origin_y = min(y_val)
+        return origin_x,origin_y
         
     def get_collision(self, child = None):
         for shape in self.rooms:
@@ -60,16 +47,8 @@ class Grammar:
             print "Trying again..."
             main.main()
         plt.plot(x,y,color='black')
-        #for line in self.lines:
-        #    print line
-        #    plt.plot(
-        #        [line[0][0],
-        #        line[0][1]],
-        #        [line[1][0],
-        #        line[1][1]],
-        #        color='black'
-        #    )
         for polygon in self.rooms:
+            #if polygon.within(self.final_shape):
             x,y = polygon.exterior.xy
             plt.plot(x,y,color='black')
         plt.axis('off')
@@ -98,11 +77,12 @@ class Grammar:
                 (50,0)
             ]
            )
-        #self.generate_walls(polygon,random.randint(0,1))
+        self.generate_rooms(polygon,1)
         self.polygons.append(polygon)
     
     def generate_child(self, count, previous = None):
         orientation = self.lateral()
+        rule = Rule.Rule()
         if count == 0:
             return
         if previous:
@@ -110,135 +90,81 @@ class Grammar:
         else:
             latest = self.polygons[len(self.polygons) - 1]
         x_val, y_val = latest.exterior.xy
-        w, h = self.get_size(x_val,y_val)
-        x, y = self.choose_origin(w,h)
+        x, y = self.choose_origin(x_val,y_val)
         if orientation:
             polygon = Polygon(
                 [
                     (x,y),
-                    (x+100,y),
-                    (x+100,y+50),
-                    (x,y+50)
+                    (x+100*rule.scale_factor,y),
+                    (x+100*rule.scale_factor,y+50*rule.scale_factor),
+                    (x,y+50*rule.scale_factor)
                 ]
             )
         else:
             polygon = Polygon(
                 [
                     (x,y),
-                    (x,y+100),
-                    (x+50,y+100),
-                    (x+50,y)
+                    (x,y+100*rule.scale_factor),
+                    (x+50*rule.scale_factor,y+100*rule.scale_factor),
+                    (x+50*rule.scale_factor,y)
                 ]
             )
-        #self.generate_walls(polygon,random.randint(0,1))
-        self.generate_rooms(polygon,random.randint(0,1))
+        self.generate_rooms(polygon,random.randint(1,5))
         self.polygons.append(polygon)
         count -= 1
         self.generate_child(count, polygon)
         
     def generate_rooms(self, polygon, count):
-        if count == 0: return
         room = None
+        
+        if count == 0: return
+        
         x_vals, y_vals = polygon.exterior.xy
+        
         _x = min(x_vals)
-        orig_x = _x
-        _y = random.uniform(min(y_vals),max(y_vals))
-        orig_y = _y
+        _y = max(y_vals)
+        
+        orig_x, orig_y = _x,_y
         
         origin = (_x,_y)
         
-        while Point(_x+1,_y).within(polygon):
-            _x += 1
-        _x += 1
+        #TOP RIGHT
+        while Point(_x+.1,_y-.1).within(polygon):
+            _x += .1
         topright = (_x,_y)
                 
+        #BOTTOM LEFT
         _x = orig_x
-        while Point(_x+1,_y-1).within(polygon):
-            _y -= 1
+        while Point(_x+.1,_y-.1).within(polygon):
+            _y -= .1
         bottomleft = (_x,_y)
                 
-        _x = max(x_vals)
+        #BOTTOM RIGHT
+        _x = orig_x
         _y = orig_y
-        while Point(_x-1,_y-1).within(polygon):
-            _y -= 1
+        while Point(_x-.1,_y-.1).within(polygon):
+            _y -= .1
         bottomright = (_x,_y)
-        orientation = self.lateral()
-        if orientation:
-            room = Polygon(
-                [
-                    origin,
-                    topright,
-                    bottomright,
-                    bottomleft
-                ]
-            )
-        else:
-            room = Polygon(
-                [
-                    origin[::-1],
-                    topright[::-1],
-                    bottomright[::-1],
-                    bottomleft[::-1]
-                ]
-            )
+        
+        room = Polygon(
+            [
+                origin,
+                topright,
+                bottomright,
+                bottomleft
+            ]
+        )
+        
+        print room
         
         if self.get_collision(room):
+            print "ACCIDENT!"
             return
             
         self.rooms.append(room)
                 
         count -= 1
         self.generate_rooms(polygon, count)
-        
-    def generate_walls(self, polygon, count):
-        if count == 0:
-            return
-        line = []
-        x_val, y_val = polygon.exterior.xy
-        orientation = self.lateral()
-        #_x = random.uniform(min(x_val),max(x_val))
-        orig_x = min(x_val)
-        _x = orig_x
-        orig_y = random.uniform(min(y_val),max(y_val))
-        _y = orig_y
-        while Point(_x+1,_y).within(polygon):
-            line.append((_x,_y))
-            _x += 1
-        _x += 1
-        line.append((_x,_y))
-        wall = ([line[0][0],line[len(line)-1][0]],
-                [line[0][1],line[len(line)-1][1]])
-        line = []
-        self.lines.append(wall)
-        _x = orig_x
-        while Point(_x+1,_y).within(polygon):
-            line.append((_x,_y))
-            _y -= 1
-        wall = ([line[0][0],line[len(line)-1][0]],
-                [line[0][1],line[len(line)-1][1]])
-        line = []
-        self.lines.append(wall)
-        _x = max(x_val)
-        _y = orig_y
-        while Point(_x-1,_y).within(polygon):
-            line.append((_x,_y))
-            _y -= 1
-        wall = ([line[0][0],line[len(line)-1][0]],
-                [line[0][1],line[len(line)-1][1]])
-        self.lines.append(wall)
-        line = []
-        _x = orig_x
-        _y = min(y_val)
-        while Point(_x+1,_y+1).within(polygon):
-            line.append((_x,_y))
-            _x += 1
-        _x += 1
-        line.append((_x,_y))
-        wall = ([line[0][0],line[len(line)-1][0]],
-                [line[0][1],line[len(line)-1][1]])
-        self.lines.append(wall)
-        count -= 1
-        self.generate_walls(polygon, count)
     
     def generate_outline(self):
         self.final_shape = cascaded_union(self.polygons)

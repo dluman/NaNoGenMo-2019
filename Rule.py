@@ -3,10 +3,13 @@ import random
 class Rule:
 
     def __init__(self):
-        self.factors = [.25,.50,.75]
+        self.factors = [
+            .75,
+            1.0,
+            1.25
+        ]
         self.scale_factor = self.set_scale()
     
-    @staticmethod
-    def set_scale():
-        seed = random.randint(0,len(factors) -1)
+    def set_scale(self):
+        seed = random.randint(0,len(self.factors) -1)
         return self.factors[seed]
