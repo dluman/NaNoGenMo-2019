@@ -3,6 +3,7 @@ import Rule
 import File
 import main
 import matplotlib.pyplot as plt
+import shapely
 
 from shapely.geometry import Polygon
 from shapely.geometry import Point
@@ -16,6 +17,7 @@ class Grammar:
         self.polygons = []
         self.rooms = []
         self.lines = []
+        self.external_features = []
     
     @staticmethod
     def lateral():
@@ -45,17 +47,20 @@ class Grammar:
             x,y = self.final_shape.exterior.xy
         except AttributeError:
             print "Trying again..."
+            self.external_features = []
             main.main()
         plt.plot(x,y,color='black',linewidth=3.0)
         for polygon in self.rooms:
             #if polygon.within(self.final_shape):
             x,y = polygon.exterior.xy
-            plt.plot(x,y,color='black')
+            plt.plot(x,y,color='black',linewidth=2.0)
         plt.axis('off')
         plt.savefig("a_house.png")
         file = File.ImageOps("a_house.png")
         file.add_label("The Ulysses House")
-        plt.show()
+        for feature in self.external_features:
+            file.add_exterior_features(feature)
+        #plt.show()
     
     def generate_parent(self):
         orientation = self.lateral()
@@ -136,6 +141,8 @@ class Grammar:
         while Point(_x+.1,_y-.1).within(polygon):
             _x += .1
         topright = (_x,_y)
+        
+        self.generate_external_feature(origin,topright)
                 
         #BOTTOM LEFT
         _x = orig_x
@@ -170,6 +177,20 @@ class Grammar:
                 
         count -= 1
         self.generate_rooms(polygon, count)
+    
+    def generate_external_feature(self,orig,end):
+        orig_x,orig_y = orig
+        end_x, end_y = end
+        if orig_y == end_y: 
+            rotate = 0
+            x = int(random.uniform(orig_x,end_x))
+            print x,int(orig_y)
+            point = (x,int(orig_y))
+        else: 
+            y = int(random.uniform(orig_y,end_y))
+            point = (int(orig_x), y)
+            rotate = 90
+        self.external_features.append(("door1",point,rotate))
     
     def generate_outline(self):
         self.final_shape = cascaded_union(self.polygons)

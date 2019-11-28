@@ -20,3 +20,14 @@ class ImageOps:
             font=type
         )
         img.save(self.filename)
+    
+    def add_exterior_features(self,exterior_feature):
+        img = Image.open(self.filename)
+        door = Image.open('icons/' + exterior_feature[0] + '.png')
+        door.rotate(exterior_feature[2], Image.NEAREST, expand = 1)
+        print "Rotating %d" % exterior_feature[2]
+        door = door.resize((50,50),Image.ANTIALIAS)
+        for feature in exterior_feature:
+            img.paste(door,(exterior_feature[1][0],exterior_feature[1][1]+25))
+        img.save(self.filename)
+        img.show()
