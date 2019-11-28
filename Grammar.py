@@ -46,7 +46,7 @@ class Grammar:
         except AttributeError:
             print "Trying again..."
             main.main()
-        plt.plot(x,y,color='black')
+        plt.plot(x,y,color='black',linewidth=3.0)
         for polygon in self.rooms:
             #if polygon.within(self.final_shape):
             x,y = polygon.exterior.xy
@@ -77,7 +77,7 @@ class Grammar:
                 (50,0)
             ]
            )
-        self.generate_rooms(polygon,1)
+        self.generate_rooms(polygon,random.randint(1,5))
         self.polygons.append(polygon)
     
     def generate_child(self, count, previous = None):
@@ -119,12 +119,16 @@ class Grammar:
         
         if count == 0: return
         
+        rule = Rule.Rule()
+        scale = rule.scale_factor * 10
+        
         x_vals, y_vals = polygon.exterior.xy
         
-        _x = min(x_vals)
-        _y = max(y_vals)
+        _x = min(x_vals) #+ scale
+        #_y = y_vals[random.randint(0,len(y_vals)-1)]
+        _y = max(y_vals) #- scale
         
-        orig_x, orig_y = _x,_y
+        orig_x, orig_y = _x+.1,_y-.1
         
         origin = (_x,_y)
         
@@ -140,7 +144,11 @@ class Grammar:
         bottomleft = (_x,_y)
                 
         #BOTTOM RIGHT
-        _x = orig_x
+        wall_chance = random.randint(0,1)
+        if wall_chance:
+            _x = orig_x
+        else: 
+            _x = max(x_vals) - .1
         _y = orig_y
         while Point(_x-.1,_y-.1).within(polygon):
             _y -= .1
@@ -155,10 +163,7 @@ class Grammar:
             ]
         )
         
-        print room
-        
         if self.get_collision(room):
-            print "ACCIDENT!"
             return
             
         self.rooms.append(room)
