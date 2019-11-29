@@ -4,7 +4,7 @@ import random
 def main():
     Building = Grammar.Grammar()
     Building.generate_parent()
-    Building.generate_child(random.randint(2,10))
+    Building.generate_child(random.randint(1,6))
     Building.generate_outline()
     Building.display()
 

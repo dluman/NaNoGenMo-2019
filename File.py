@@ -32,3 +32,7 @@ class ImageOps:
             img.paste(door,(exterior_feature[1][0],exterior_feature[1][1]+25))
         img.save(self.filename)
         img.show()
+    
+    def get_size(self):
+        img = Image.open('icons/'+self.filename+'.png')
+        return img.size
