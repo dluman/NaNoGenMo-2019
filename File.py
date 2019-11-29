@@ -24,6 +24,7 @@ class ImageOps:
     def add_exterior_features(self,exterior_feature):
         img = Image.open(self.filename)
         door = Image.open('icons/' + exterior_feature[0] + '.png')
+        door = door.convert('RGBA')
         door.rotate(exterior_feature[2], Image.NEAREST, expand = 1)
         print "Rotating %d" % exterior_feature[2]
         door = door.resize((50,50),Image.ANTIALIAS)

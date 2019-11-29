@@ -9,6 +9,10 @@ from shapely.geometry import Polygon
 from shapely.geometry import Point
 from shapely.geometry import LineString
 from shapely.ops import cascaded_union
+from matplotlib.offsetbox import (TextArea, DrawingArea, OffsetImage,
+                                  AnnotationBbox)
+from matplotlib.cbook import get_sample_data
+from matplotlib.patches import Polygon as plotPoly
 
 class Grammar:
 
@@ -49,18 +53,38 @@ class Grammar:
             print "Trying again..."
             self.external_features = []
             main.main()
-        plt.plot(x,y,color='black',linewidth=3.0)
+        fig, ax = plt.subplots(sharex='all',sharey='all')
+        ax.plot(x,y,color='black',linewidth=3.0)
         for polygon in self.rooms:
             #if polygon.within(self.final_shape):
             x,y = polygon.exterior.xy
-            plt.plot(x,y,color='black',linewidth=2.0)
+            ax.plot(x,y,color='black',linewidth=2.0)
+        ax = self.plot_graphics(ax)
         plt.axis('off')
         plt.savefig("a_house.png")
         file = File.ImageOps("a_house.png")
         file.add_label("The Ulysses House")
+        #for feature in self.external_features:
+        #    file.add_exterior_features(feature)
+        plt.show()
+    
+    def plot_graphics(self,ax):
+        fn = get_sample_data('/home/dluman/NGM-2019/icons/door1.png', asfileobj=False)
+        img = plt.imread(fn,format='jpeg')
         for feature in self.external_features:
-            file.add_exterior_features(feature)
-        #plt.show()
+            w,h,a = img.shape
+            ratio = float(w)/float(h)
+            x,y = feature[1]
+            imagebox = OffsetImage(img,zoom=.2)
+            imagebox.image.axes = ax
+            ab = AnnotationBbox(
+                imagebox,
+                (x,y-(h*ratio)),
+                frameon=False
+            )
+            ax.add_artist(ab)
+        return ax
+            
     
     def generate_parent(self):
         orientation = self.lateral()
@@ -141,8 +165,6 @@ class Grammar:
         while Point(_x+.1,_y-.1).within(polygon):
             _x += .1
         topright = (_x,_y)
-        
-        self.generate_external_feature(origin,topright)
                 
         #BOTTOM LEFT
         _x = orig_x
@@ -172,7 +194,8 @@ class Grammar:
         
         if self.get_collision(room):
             return
-            
+        
+        self.generate_external_feature(origin,topright)
         self.rooms.append(room)
                 
         count -= 1
@@ -181,7 +204,7 @@ class Grammar:
     def generate_external_feature(self,orig,end):
         orig_x,orig_y = orig
         end_x, end_y = end
-        if orig_y == end_y: 
+        if orig_y == end_y:
             rotate = 0
             x = int(random.uniform(orig_x,end_x))
             print x,int(orig_y)
