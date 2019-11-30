@@ -29,6 +29,7 @@ class Grammar:
         self.interior_features = []
         self.windows = 0
         self.doors = 0
+        self.internals = 0
     
     @staticmethod
     def lateral():
@@ -79,6 +80,8 @@ class Grammar:
         plt.savefig("a_house.png")
         file = File.ImageOps("a_house.png")
         file.add_label("The Ulysses House")
+        #for feature in self.interior_features:
+        #    file.add_interior_feature(feature[0],feature[1],feature[2])
         #for feature in self.external_features:
         #    file.add_exterior_features(feature)
         plt.show()
@@ -131,13 +134,12 @@ class Grammar:
                 if graphic == "window1":
                     pass
                 else:
-                    offset_x = -.75
+                    offset_x = -.7
             else:
                 if graphic == "window1":
                     pass
                 else:
                     offset_y = .75
-            print graphic,offset_x,offset_y
             imagebox.image.axes = ax
             ab = AnnotationBbox(
                 imagebox,
@@ -228,6 +230,7 @@ class Grammar:
         room = None
         self.windows = 0
         self.doors = 0
+        self.internals = 0
         if count == 0: return
         
         rule = Rule.Rule()
@@ -287,7 +290,15 @@ class Grammar:
             self.generate_external_feature("-h","window1",bottomright,bottomleft)
             self.generate_external_feature("v","window1",origin,bottomright)
             self.generate_external_feature("-v","window1",topright,bottomright)
-        self.generate_internal_feature("couch1",random.randint(0,270),polygon)
+        while self.internals < 1:
+            self.generate_internal_feature("couch1",random.randint(-30,30),polygon)
+            self.generate_internal_feature("bed1",random.randint(-30,30),polygon)
+            self.generate_internal_feature("bed2",random.randint(-30,30),polygon)
+            self.generate_internal_feature("table1",random.randint(-30,30),polygon)
+            self.generate_internal_feature("man1",random.randint(-30,30),polygon)
+            self.generate_internal_feature("woman1",random.randint(-30,30),polygon)
+            self.generate_internal_feature("tv1",random.randint(-30,30),polygon)
+            self.generate_internal_feature("piano1",random.randint(-30,30),polygon)
         self.rooms.append(room)
                 
         count -= 1
@@ -321,14 +332,22 @@ class Grammar:
     def generate_internal_feature(self,element,rotate,room):
         x,y = room.exterior.xy
         # 86.5, 57.5 test data
-        w,h = File.ImageOps('couch1').get_size()
+        w,h = File.ImageOps(element).get_size()
         max_dim = w * .2 if w > h else h * .2
+        # object_space = Polygon(
+            # [
+                # (min(x)+max_dim,max(y)-max_dim),
+                # (max(x)-max_dim,max(y)-max_dim),
+                # (max(x)-max_dim,min(y)+max_dim),
+                # (min(x)+max_dim,min(y)+max_dim)
+            # ]
+        # )
         object_space = Polygon(
             [
-                (min(x)+max_dim,max(y)-max_dim),
-                (max(x)-max_dim,max(y)-max_dim),
-                (max(x)-max_dim,min(y)+max_dim),
-                (min(x)+max_dim,min(y)+max_dim)
+                (min(x),max(y)),
+                (max(x),max(y)),
+                (max(x),min(y)),
+                (min(x),min(y))
             ]
         )
         x,y = object_space.exterior.xy
@@ -344,9 +363,10 @@ class Grammar:
             ]
         )
         if room.contains(object_itself) and not self.get_collision(object_itself):
-            print "PLACING A COUCH"
+            print "PLACING FURNITURE"
             self.objects.append(object_itself)
             self.interior_features.append((element,point,rotate))
+            self.internals += 1
     
     def generate_outline(self):
         self.final_shape = cascaded_union(self.polygons)

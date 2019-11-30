@@ -33,6 +33,17 @@ class ImageOps:
         img.save(self.filename)
         img.show()
     
+    def add_interior_feature(self,feature,point,rotate):
+        base = Image.open(self.filename)
+        img = Image.open('icons/'+feature+'.png')
+        w,h = img.size
+        w *= .2
+        h *= .2
+        img.rotate(rotate, Image.NEAREST, expand = 1)
+        img = img.resize((w,h),Image.ANTIALIAS)
+        base.paste(img,point)
+        base.save(self.filename)
+    
     def get_size(self):
         img = Image.open('icons/'+self.filename+'.png')
         return img.size
