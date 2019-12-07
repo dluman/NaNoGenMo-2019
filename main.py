@@ -1,12 +1,10 @@
 import Grammar
+import Files
+
 import random
 
-def main():
-    Building = Grammar.Grammar()
-    Building.generate_parent()
-    Building.generate_child(random.randint(1,6))
-    Building.generate_outline()
-    Building.display()
-
-if __name__ == '__main__':
-    main()
+for _ in range(12000):
+	try:
+		Grammar.main()
+	except:
+		print "Exception, but that's OK"
