@@ -4,7 +4,15 @@ Repository for "Shelter Should Be the Essential Look of any Dwelling," an attemp
 
 ## End-of-month Update
 
-Who knows if it's any good? All I can say for certain is that this iteration is done.
+Who knows if it's any good? All I can say for certain is that this iteration is done. When I posted early results to Twitter, one user commented:
+
+> I'd live here. I love the idea of never being quite certain there's not somethig *happening* in an area of the house I can't get to without leaving the possibly illusory safety of the bit I'm already in.
+
+I appreciate how this contrasts/joins with/amplifies the title. I wasn't convinced that anyone would really respond to this somewhat asemic, aleatory operation. The above encouraged me greatly.
+
+This branch of the project ends here. However, I plan to reshape the code developed during the month toward a different set of narrative possibilities. Of course, this means more planning and overall strategy. Much of the code here represents an end-of-the-month dash to get _something_ done (as is usually the case). As such, the PDF is a monster (it's 13,000+ pages), and the architect gets a little lazy with 2/ and 3 room houses, but they're all unique.
+
+The PDF: [Shelter Should Be the Essential Look of Any Dwelling](https://drive.google.com/file/d/1UJcO_Q_pyPxvqYnhqn-GOYDRT0OSeOab/view?usp=sharing)
 
 FINAL WORD COUNT (purely text): 55,316
 
